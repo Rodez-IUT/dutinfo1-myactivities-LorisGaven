@@ -9,6 +9,17 @@ CREATE OR REPLACE FUNCTION get_default_owner() RETURNS "user" AS $$
 	   END IF;
 	   RETURN default_owner;
 	END
-$$ LANGUAGE 'plpgsql'; 
+$$ LANGUAGE 'plpgsql';
+
+
+CREATE OR REPLACE FUNCTION fix_activities_without_owner() RETURNS SETOF activity AS $$
+	DECLARE
+		id_default_owner bigint;
+	BEGIN
+		SELECT id INTO id_default_owner FROM "user" WHERE username = 'Default Owner';
+		UPDATE activity SET owner_id = id_default_owner  WHERE owner_id IS NULL;
+		RETURN QUERY SELECT * FROM activity WHERE owner_id = id_default_owner ;
+	END
+$$ LANGUAGE 'plpgsql';
 
 		
